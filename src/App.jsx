@@ -677,12 +677,12 @@ function HealthPage({ onBack, growthRecords, setGrowthRecords, fetalRecords, set
               <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:10 }}>
                 <div>
                   <div style={{ fontWeight:800, color:C.text, fontSize:15 }}>{r.date}</div>
-                  {r.weeks && <div style={{ fontSize:12, color:GRN.dark, fontWeight:600, marginTop:2 }}>🤰 第 {r.weeks} 週</div>}
+                  {r.weeks && <div style={{ fontSize:12, color:GRN.dark, fontWeight:700, marginTop:3, background:GRN.light, display:"inline-block", borderRadius:8, padding:"2px 10px" }}>第 {r.weeks} 週</div>}
                 </div>
                 <button onClick={()=>setFetalRecords(p=>p.filter(x=>x.id!==r.id))} style={{ background:"#FDEAE5", border:"none", borderRadius:10, padding:"6px 10px", color:"#E08080", fontSize:11, cursor:"pointer", fontFamily:"inherit" }}>🗑 刪除</button>
               </div>
               <div style={{ display:"flex", flexWrap:"wrap", gap:10 }}>
-                {[["週數",r.weeks,"w"],["EFW體重",r.efw,"g"],["BPD頭寬",r.bpd,"cm"],["AC腹圍",r.ac,"cm"],["FL大腿骨",r.fl,"cm"]].map(([lbl,val,unit])=>val ? (
+                {[["EFW體重",r.efw,"g"],["BPD頭寬",r.bpd,"cm"],["AC腹圍",r.ac,"cm"],["FL大腿骨",r.fl,"cm"]].map(([lbl,val,unit])=>val ? (
                   <div key={lbl} style={{ background:GRN.light, borderRadius:10, padding:"6px 12px", minWidth:70 }}>
                     <div style={{ fontSize:10, color:GRN.dark, marginBottom:2 }}>{lbl}</div>
                     <div style={{ fontWeight:700, color:GRN.dark, fontSize:14 }}>{val}<span style={{ fontSize:11 }}> {unit}</span></div>
@@ -2476,7 +2476,7 @@ function BabyApp() {
     "id": 3,
     "account": "dad",
     "date": "2026-05-06",
-    "category": "醫療/健康",
+    "category": "醫療",
     "desc": "糖水",
     "amount": 300
   },
@@ -2484,7 +2484,7 @@ function BabyApp() {
     "id": 1778166711523,
     "account": "mom",
     "date": "2026-05-06",
-    "category": "醫療/健康",
+    "category": "醫療",
     "desc": "24w 產檢",
     "amount": 550
   }
@@ -2857,7 +2857,8 @@ function BabyApp() {
 ]); // per-account custom categories
 
   function handleRestore(data) {
-    if (data.expenses) setExpenses(data.expenses);
+    const CAT_MIGRATE = { "醫療/健康":"醫療", "寢具/推車":"其他" };
+    if (data.expenses) setExpenses(data.expenses.map(e => ({ ...e, category: CAT_MIGRATE[e.category] || e.category })));
     if (data.deposits) setDeposits(data.deposits);
     if (data.health) setHealth(data.health);
     if (data.feedingRecords) setFeedingRecords(data.feedingRecords);
@@ -2896,7 +2897,8 @@ function BabyApp() {
     const unsub = onValue(dbRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
-        if (data.expenses) setExpenses(data.expenses);
+        const CAT_MIGRATE = { "醫療/健康":"醫療", "寢具/推車":"其他" };
+        if (data.expenses) setExpenses(data.expenses.map(e => ({ ...e, category: CAT_MIGRATE[e.category] || e.category })));
         if (data.deposits) setDeposits(data.deposits);
         if (data.health) setHealth(data.health);
         if (data.feedingRecords) setFeedingRecords(data.feedingRecords);
