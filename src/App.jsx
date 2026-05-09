@@ -585,7 +585,7 @@ function HealthPage({ onBack, growthRecords, setGrowthRecords, fetalRecords, set
   const [showTemp, setShowTemp] = useState(false);
   const [growthSearchDate, setGrowthSearchDate] = useState("");
   const [gForm, setGForm] = useState({ date:"", weight:"", height:"", head:"" });
-  const [fForm, setFForm] = useState({ date:"", weeks:"", efw:"", bpd:"", ac:"", fl:"" });
+  const [fForm, setFForm] = useState({ date:"", weeks:"", days:"", efw:"", bpd:"", ac:"", fl:"" });
   const [showFetal, setShowFetal] = useState(false);
   const [growthSubTab, setGrowthSubTab] = useState("fetal"); // "fetal" | "birth"
   const [vForm, setVForm] = useState({ date:"", name:"", hospital:"", note:"" });
@@ -694,11 +694,20 @@ function HealthPage({ onBack, growthRecords, setGrowthRecords, fetalRecords, set
           {showFetal && (
             <Modal title="新增胎兒生長記錄" onClose={()=>setShowFetal(false)} onSave={()=>{
               if(!fForm.date) return;
-              setFetalRecords(p=>[...p,{ id:Date.now(), ...fForm }]);
-              setFForm({ date:"", weeks:"", efw:"", bpd:"", ac:"", fl:"" }); setShowFetal(false);
+              const weeksStr = fForm.weeks ? (fForm.days ? `${fForm.weeks}w${fForm.days}d` : `${fForm.weeks}w`) : "";
+              setFetalRecords(p=>[...p,{ id:Date.now(), ...fForm, weeks:weeksStr }]);
+              setFForm({ date:"", weeks:"", days:"", efw:"", bpd:"", ac:"", fl:"" }); setShowFetal(false);
             }} color={GRN.grad}>
               <FLabel label="日期（產檢日）"><input type="date" value={fForm.date} onChange={e=>setFForm(p=>({...p,date:e.target.value}))} style={{ ...IS2, borderColor:GRN.mid }}/></FLabel>
-              <FLabel label="週數 (w)"><input type="number" step="1" placeholder="24" value={fForm.weeks} onChange={e=>setFForm(p=>({...p,weeks:e.target.value}))} style={{ ...IS2, borderColor:GRN.mid }}/></FLabel>
+              <FLabel label="週數">
+                <div style={{ display:"flex", gap:8, alignItems:"center" }}>
+                  <input type="number" step="1" min="0" max="42" placeholder="24" value={fForm.weeks} onChange={e=>setFForm(p=>({...p,weeks:e.target.value}))} style={{ ...IS2, borderColor:GRN.mid, flex:1 }}/>
+                  <span style={{ color:GRN.dark, fontWeight:700, fontSize:14 }}>w</span>
+                  <input type="number" step="1" min="0" max="6" placeholder="5" value={fForm.days||""} onChange={e=>setFForm(p=>({...p,days:e.target.value}))} style={{ ...IS2, borderColor:GRN.mid, flex:1 }}/>
+                  <span style={{ color:GRN.dark, fontWeight:700, fontSize:14 }}>d</span>
+                </div>
+                {(fForm.weeks||fForm.days) && <div style={{ fontSize:12, color:GRN.dark, marginTop:4, fontWeight:600 }}>📅 {fForm.weeks||"0"}w{fForm.days||"0"}d</div>}
+              </FLabel>
               <FLabel label="EFW 估計體重 (g)"><input type="number" step="1" placeholder="600" value={fForm.efw} onChange={e=>setFForm(p=>({...p,efw:e.target.value}))} style={{ ...IS2, borderColor:GRN.mid }}/></FLabel>
               <FLabel label="BPD 頭寬 (cm)"><input type="number" step="0.1" placeholder="6.2" value={fForm.bpd} onChange={e=>setFForm(p=>({...p,bpd:e.target.value}))} style={{ ...IS2, borderColor:GRN.mid }}/></FLabel>
               <FLabel label="AC 腹圍 (cm)"><input type="number" step="0.1" placeholder="20.5" value={fForm.ac} onChange={e=>setFForm(p=>({...p,ac:e.target.value}))} style={{ ...IS2, borderColor:GRN.mid }}/></FLabel>
