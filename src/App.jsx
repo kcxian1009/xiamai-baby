@@ -1653,6 +1653,58 @@ function ExpenseList({ acctKey, expenses, onAdd, onDelete, onEdit, customCategor
         <span style={{ fontSize:18, fontWeight:800, color:acct.color }}>NT$ {periodTotal.toLocaleString()}</span>
       </div>
 
+      {/* 新增支出 button - placed above category filter */}
+      {!show
+        ? <button onClick={() => setShow(true)} style={{ width:"100%", padding:12, background:"linear-gradient(135deg,"+acct.grad[0]+","+acct.grad[1]+")", border:"none", borderRadius:16, color:"white", fontWeight:800, fontSize:15, cursor:"pointer", fontFamily:"inherit", marginBottom:12 }}>+ 新增支出</button>
+        : <FormCard title="新增支出" accent={acct.color} onCancel={() => setShow(false)} onSave={save}>
+            <FL label="日期"><input type="date" value={form.date} onChange={e => setForm(p => ({...p, date:e.target.value}))} style={IS} /></FL>
+            <FL label="項目說明"><input type="text" placeholder="例：嬰兒床" value={form.desc} onChange={e => setForm(p => ({...p, desc:e.target.value}))} style={IS} /></FL>
+            <FL label="金額 (NT$)">
+              <div style={{ display:"flex", gap:8 }}>
+                <input type="number" placeholder="0" value={form.amount} onChange={e => setForm(p => ({...p, amount:e.target.value}))} style={{ ...IS, flex:1 }} />
+                <button type="button" onClick={()=>{ setCalcTarget("add"); setShowCalc(true); }} style={{ background:"linear-gradient(135deg,"+acct.grad[0]+","+acct.grad[1]+")", border:"none", borderRadius:12, padding:"0 14px", color:"white", fontSize:18, cursor:"pointer", flexShrink:0 }}>🧮</button>
+              </div>
+            </FL>
+            <FL label="分類">
+              <select value={form.category} onChange={e => setForm(p => ({...p, category:e.target.value}))} style={IS}>
+                {Object.keys(allCatIcons).map(c => <option key={c} value={c}>{allCatIcons[c]} {c}</option>)}
+              </select>
+            </FL>
+            <FL label="付款方式">
+              <div style={{ display:"flex", gap:8 }}>
+                {["現金","信用卡"].map(m => (
+                  <button key={m} type="button" onClick={() => setForm(p => ({...p, payMethod:m, creditCard:""}))}
+                    style={{ flex:1, padding:"9px 0", borderRadius:12, border:"none",
+                      background: form.payMethod===m ? "linear-gradient(135deg,"+acct.grad[0]+","+acct.grad[1]+")" : "#EFE2CA",
+                      color: form.payMethod===m ? "white" : "#5C4033",
+                      fontWeight:700, cursor:"pointer", fontFamily:"inherit", fontSize:14 }}>
+                    {m==="現金"?"💵 現金":"💳 信用卡"}
+                  </button>
+                ))}
+              </div>
+            </FL>
+            {form.payMethod==="信用卡" && (
+              <FL label="信用卡別">
+                <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+                  {["星展","台新","富邦","華南","玉山","其他"].map(card => (
+                    <button key={card} type="button" onClick={() => setForm(p => ({...p, creditCard: p.creditCard===card&&card!=="其他" ? "" : card}))}
+                      style={{ padding:"7px 14px", borderRadius:20, border:"none",
+                        background: form.creditCard===card ? acct.color : "#F5EDE3",
+                        color: form.creditCard===card ? "white" : "#8A6946",
+                        fontWeight:600, cursor:"pointer", fontFamily:"inherit", fontSize:13 }}>
+                      {card}
+                    </button>
+                  ))}
+                </div>
+                {form.creditCard==="其他" && (
+                  <input type="text" placeholder="請輸入卡別名稱" value={form.creditCardCustom||""} onChange={e => setForm(p => ({...p, creditCardCustom:e.target.value}))}
+                    style={{ ...IS, marginTop:8 }}/>
+                )}
+              </FL>
+            )}
+          </FormCard>
+      }
+
       {/* Category filter row */}
       <div style={{ display:"flex", gap:8, overflowX:"auto", paddingBottom:8, marginBottom:14, alignItems:"center" }}>
         {["全部",...Object.keys(allCatIcons)].map(cat => (
@@ -1764,56 +1816,6 @@ function ExpenseList({ acctKey, expenses, onAdd, onDelete, onEdit, customCategor
           </div>
         ))}
       </div>
-      {!show
-        ? <button onClick={() => setShow(true)} style={{ width:"100%", padding:13, background:"linear-gradient(135deg,"+acct.grad[0]+","+acct.grad[1]+")", border:"none", borderRadius:16, color:"white", fontWeight:800, fontSize:15, cursor:"pointer", fontFamily:"inherit" }}>+ 新增支出</button>
-        : <FormCard title="新增支出" accent={acct.color} onCancel={() => setShow(false)} onSave={save}>
-            <FL label="日期"><input type="date" value={form.date} onChange={e => setForm(p => ({...p, date:e.target.value}))} style={IS} /></FL>
-            <FL label="項目說明"><input type="text" placeholder="例：嬰兒床" value={form.desc} onChange={e => setForm(p => ({...p, desc:e.target.value}))} style={IS} /></FL>
-            <FL label="金額 (NT$)">
-              <div style={{ display:"flex", gap:8 }}>
-                <input type="number" placeholder="0" value={form.amount} onChange={e => setForm(p => ({...p, amount:e.target.value}))} style={{ ...IS, flex:1 }} />
-                <button type="button" onClick={()=>{ setCalcTarget("add"); setShowCalc(true); }} style={{ background:"linear-gradient(135deg,"+acct.grad[0]+","+acct.grad[1]+")", border:"none", borderRadius:12, padding:"0 14px", color:"white", fontSize:18, cursor:"pointer", flexShrink:0 }}>🧮</button>
-              </div>
-            </FL>
-            <FL label="分類">
-              <select value={form.category} onChange={e => setForm(p => ({...p, category:e.target.value}))} style={IS}>
-                {Object.keys(allCatIcons).map(c => <option key={c} value={c}>{allCatIcons[c]} {c}</option>)}
-              </select>
-            </FL>
-            <FL label="付款方式">
-              <div style={{ display:"flex", gap:8 }}>
-                {["現金","信用卡"].map(m => (
-                  <button key={m} type="button" onClick={() => setForm(p => ({...p, payMethod:m, creditCard:""}))}
-                    style={{ flex:1, padding:"9px 0", borderRadius:12, border:"none",
-                      background: form.payMethod===m ? "linear-gradient(135deg,"+acct.grad[0]+","+acct.grad[1]+")" : "#EFE2CA",
-                      color: form.payMethod===m ? "white" : "#5C4033",
-                      fontWeight:700, cursor:"pointer", fontFamily:"inherit", fontSize:14 }}>
-                    {m==="現金"?"💵 現金":"💳 信用卡"}
-                  </button>
-                ))}
-              </div>
-            </FL>
-            {form.payMethod==="信用卡" && (
-              <FL label="信用卡別">
-                <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
-                  {["星展","台新","富邦","華南","玉山","其他"].map(card => (
-                    <button key={card} type="button" onClick={() => setForm(p => ({...p, creditCard: p.creditCard===card&&card!=="其他" ? "" : card}))}
-                      style={{ padding:"7px 14px", borderRadius:20, border:"none",
-                        background: form.creditCard===card ? acct.color : "#F5EDE3",
-                        color: form.creditCard===card ? "white" : "#8A6946",
-                        fontWeight:600, cursor:"pointer", fontFamily:"inherit", fontSize:13 }}>
-                      {card}
-                    </button>
-                  ))}
-                </div>
-                {form.creditCard==="其他" && (
-                  <input type="text" placeholder="請輸入卡別名稱" value={form.creditCardCustom||""} onChange={e => setForm(p => ({...p, creditCardCustom:e.target.value}))}
-                    style={{ ...IS, marginTop:8 }}/>
-                )}
-              </FL>
-            )}
-          </FormCard>
-      }
     </div>
   );
 }
