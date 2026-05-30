@@ -61,14 +61,14 @@ const CATEGORY_COLORS = {
 };
 
 // ── Page Shell ──────────────────────────────────────────────
-function Page({ title, onBack, children, bottomSlot }) {
+function Page({ title, onBack, children, bottomSlot, scrollRef }) {
   return (
     <div style={{ position:"fixed", inset:0, zIndex:50, background:C.bg, fontFamily:"'Noto Sans TC','PingFang TC',sans-serif", display:"flex", flexDirection:"column", maxWidth:430, left:"50%", transform:"translateX(-50%)", width:"100%" }}>
       <div style={{ background:C.card, padding:"14px 20px 12px", display:"flex", alignItems:"center", gap:12, borderBottom:"1px solid #CFBBA288", flexShrink:0 }}>
         <button onClick={onBack} style={{ background:C.warm4, border:"none", borderRadius:10, width:34, height:34, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", fontSize:20, color:C.warm1 }}>&#8249;</button>
         <span style={{ fontWeight:800, fontSize:18, color:C.text }}>{title}</span>
       </div>
-      <div style={{ flex:1, overflowY:"auto", padding:"16px 16px 24px" }}>{children}</div>
+      <div ref={scrollRef} style={{ flex:1, overflowY:"auto", padding:"16px 16px 24px" }}>{children}</div>
       {bottomSlot && <div style={{ flexShrink:0 }}>{bottomSlot}</div>}
     </div>
   );
@@ -1933,7 +1933,17 @@ function AllExpensesPage({ expenses, onBack, onDelete, categoryIcons, categoryCo
   const [catFilter, setCatFilter] = useState("全部");
   const [acctFilter, setAcctFilter] = useState("全部");
   const [viewTab, setViewTab] = useState("list"); // "list" | "chart"
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const scrollRef = useRef(null);
   const dateHook = useDateFilter();
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const onScroll = () => setShowScrollTop(el.scrollTop > 200);
+    el.addEventListener("scroll", onScroll);
+    return () => el.removeEventListener("scroll", onScroll);
+  }, []);
 
   // Base filtered by date + account
   let baseFiltered = dateHook.filterByDate(expenses.slice());
@@ -2041,7 +2051,7 @@ function AllExpensesPage({ expenses, onBack, onDelete, categoryIcons, categoryCo
   const activeColor = acctFilter==="全部"?"#D4A840":acctFilter==="baby"?ACCOUNTS.baby.color:acctFilter==="mom"?ACCOUNTS.mom.color:ACCOUNTS.dad.color;
 
   return (
-    <Page title="全部支出" onBack={onBack}>
+    <Page title="全部支出" onBack={onBack} scrollRef={scrollRef}>
       <DateRangeBar hook={dateHook} accentColor={activeColor}/>
 
       <div style={{ background:acctGrad, borderRadius:20, padding:"18px 20px", color:"white", marginBottom:16, boxShadow:"0 6px 24px "+acctShadow, transition:"all 0.3s" }}>
@@ -2088,7 +2098,7 @@ function AllExpensesPage({ expenses, onBack, onDelete, categoryIcons, categoryCo
           {/* Category list */}
           {catData.length===0 && <div style={{ textAlign:"center", color:C.warm3, padding:20 }}>此期間沒有支出 🍃</div>}
           {catData.map((d,i)=>(
-            <div key={d.name} onClick={()=>{ setViewTab("list"); setCatFilter(d.name); }} style={{ background:C.card, borderRadius:14, padding:"12px 16px", marginBottom:8, display:"flex", alignItems:"center", gap:12, border:"1px solid #EFE2CA", cursor:"pointer", transition:"box-shadow 0.15s" }}
+            <div key={d.name} onClick={()=>{ setViewTab("list"); setCatFilter(d.name); setTimeout(()=>{ if(scrollRef.current) scrollRef.current.scrollTop=0; },0); }} style={{ background:C.card, borderRadius:14, padding:"12px 16px", marginBottom:8, display:"flex", alignItems:"center", gap:12, border:"1px solid #EFE2CA", cursor:"pointer", transition:"box-shadow 0.15s" }}
               onMouseEnter={e=>e.currentTarget.style.boxShadow="0 4px 14px rgba(0,0,0,0.10)"}
               onMouseLeave={e=>e.currentTarget.style.boxShadow="none"}>
               <div style={{ width:10, height:10, borderRadius:"50%", background:d.color, flexShrink:0 }}/>
@@ -2149,6 +2159,10 @@ function AllExpensesPage({ expenses, onBack, onDelete, categoryIcons, categoryCo
           })}
         </div>
       </>)}
+      {showScrollTop && (
+        <button onClick={()=>{ if(scrollRef.current) scrollRef.current.scrollTo({ top:0, behavior:"smooth" }); }}
+          style={{ position:"fixed", bottom:28, right:"calc(50% - 197px)", zIndex:200, width:44, height:44, borderRadius:"50%", background:"linear-gradient(135deg,#C8986A,#A87848)", border:"none", color:"white", fontSize:22, cursor:"pointer", boxShadow:"0 4px 16px rgba(140,80,40,0.35)", display:"flex", alignItems:"center", justifyContent:"center", fontFamily:"inherit" }}>↑</button>
+      )}
     </Page>
   );
 }
