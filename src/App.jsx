@@ -61,7 +61,7 @@ const CATEGORY_COLORS = {
 };
 
 // ── Page Shell ──────────────────────────────────────────────
-function Page({ title, onBack, children, bottomSlot, scrollRef }) {
+function Page({ title, onBack, children, bottomSlot, scrollRef, overlay }) {
   return (
     <div style={{ position:"fixed", inset:0, zIndex:50, background:C.bg, fontFamily:"'Noto Sans TC','PingFang TC',sans-serif", display:"flex", flexDirection:"column", maxWidth:430, left:"50%", transform:"translateX(-50%)", width:"100%" }}>
       <div style={{ background:C.card, padding:"14px 20px 12px", display:"flex", alignItems:"center", gap:12, borderBottom:"1px solid #CFBBA288", flexShrink:0 }}>
@@ -70,6 +70,7 @@ function Page({ title, onBack, children, bottomSlot, scrollRef }) {
       </div>
       <div ref={scrollRef} style={{ flex:1, overflowY:"auto", padding:"16px 16px 24px" }}>{children}</div>
       {bottomSlot && <div style={{ flexShrink:0 }}>{bottomSlot}</div>}
+      {overlay}
     </div>
   );
 }
@@ -1942,7 +1943,7 @@ function AllExpensesPage({ expenses, onBack, onDelete, categoryIcons, categoryCo
     const el = scrollRef.current;
     if (!el) return;
     const onScroll = () => setShowScrollTop(el.scrollTop > 200);
-    el.addEventListener("scroll", onScroll);
+    el.addEventListener("scroll", onScroll, { passive: true });
     return () => el.removeEventListener("scroll", onScroll);
   }, []);
 
@@ -2056,8 +2057,13 @@ function AllExpensesPage({ expenses, onBack, onDelete, categoryIcons, categoryCo
     : "rgba(122,174,196,0.3)";
   const activeColor = acctFilter==="全部"?"#D4A840":acctFilter==="baby"?ACCOUNTS.baby.color:acctFilter==="mom"?ACCOUNTS.mom.color:ACCOUNTS.dad.color;
 
+  const scrollTopOverlay = (
+    <button onClick={()=>{ if(scrollRef.current) scrollRef.current.scrollTo({ top:0, behavior:"smooth" }); }}
+      style={{ position:"absolute", bottom:24, right:16, zIndex:100, width:46, height:46, borderRadius:"50%", background:"linear-gradient(135deg,#C8986A,#A87848)", border:"none", color:"white", fontSize:24, cursor:"pointer", boxShadow:"0 4px 16px rgba(140,80,40,0.4)", display:"flex", alignItems:"center", justifyContent:"center" }}>↑</button>
+  );
+
   return (
-    <Page title="全部支出" onBack={onBack} scrollRef={scrollRef}>
+    <Page title="全部支出 ✓" onBack={onBack} scrollRef={scrollRef} overlay={scrollTopOverlay}>
       <DateRangeBar hook={dateHook} accentColor={activeColor}/>
 
       <div style={{ background:acctGrad, borderRadius:20, padding:"18px 20px", color:"white", marginBottom:16, boxShadow:"0 6px 24px "+acctShadow, transition:"all 0.3s" }}>
@@ -2165,12 +2171,6 @@ function AllExpensesPage({ expenses, onBack, onDelete, categoryIcons, categoryCo
           })}
         </div>
       </>)}
-      {showScrollTop && (
-        <div style={{ position:"sticky", bottom:16, display:"flex", justifyContent:"flex-end", pointerEvents:"none" }}>
-          <button onClick={()=>{ if(scrollRef.current) scrollRef.current.scrollTo({ top:0, behavior:"smooth" }); }}
-            style={{ pointerEvents:"auto", width:46, height:46, borderRadius:"50%", background:"linear-gradient(135deg,#C8986A,#A87848)", border:"none", color:"white", fontSize:24, cursor:"pointer", boxShadow:"0 4px 16px rgba(140,80,40,0.4)", display:"flex", alignItems:"center", justifyContent:"center" }}>↑</button>
-        </div>
-      )}
     </Page>
   );
 }
