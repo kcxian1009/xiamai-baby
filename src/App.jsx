@@ -63,12 +63,12 @@ const CATEGORY_COLORS = {
 // ── Page Shell ──────────────────────────────────────────────
 function Page({ title, onBack, children, bottomSlot, scrollRef }) {
   return (
-    <div style={{ position:"fixed", inset:0, zIndex:50, background:C.bg, fontFamily:"'Noto Sans TC','PingFang TC',sans-serif", display:"flex", flexDirection:"column", maxWidth:430, left:"50%", transform:"translateX(-50%)", width:"100%", overflow:"hidden" }}>
+    <div style={{ position:"fixed", inset:0, zIndex:50, background:C.bg, fontFamily:"'Noto Sans TC','PingFang TC',sans-serif", display:"flex", flexDirection:"column", maxWidth:430, left:"50%", transform:"translateX(-50%)", width:"100%" }}>
       <div style={{ background:C.card, padding:"14px 20px 12px", display:"flex", alignItems:"center", gap:12, borderBottom:"1px solid #CFBBA288", flexShrink:0 }}>
         <button onClick={onBack} style={{ background:C.warm4, border:"none", borderRadius:10, width:34, height:34, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", fontSize:20, color:C.warm1 }}>&#8249;</button>
         <span style={{ fontWeight:800, fontSize:18, color:C.text }}>{title}</span>
       </div>
-      <div style={{ flex:1, overflowY:"auto", padding:"16px 16px 24px", position:"relative" }} ref={scrollRef}>{children}</div>
+      <div ref={scrollRef} style={{ flex:1, overflowY:"auto", padding:"16px 16px 24px" }}>{children}</div>
       {bottomSlot && <div style={{ flexShrink:0 }}>{bottomSlot}</div>}
     </div>
   );
@@ -1937,6 +1937,7 @@ function AllExpensesPage({ expenses, onBack, onDelete, categoryIcons, categoryCo
   const scrollRef = useRef(null);
   const dateHook = useDateFilter();
 
+  // 監聽滾動，超過200px就顯示↑按鈕
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
@@ -1945,7 +1946,7 @@ function AllExpensesPage({ expenses, onBack, onDelete, categoryIcons, categoryCo
     return () => el.removeEventListener("scroll", onScroll);
   }, []);
 
-  // 切換分類或切換到 list tab 時，自動回頂
+  // 切換分類或tab時自動回頂
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = 0;
   }, [catFilter, viewTab]);
@@ -2055,16 +2056,6 @@ function AllExpensesPage({ expenses, onBack, onDelete, categoryIcons, categoryCo
     : "rgba(122,174,196,0.3)";
   const activeColor = acctFilter==="全部"?"#D4A840":acctFilter==="baby"?ACCOUNTS.baby.color:acctFilter==="mom"?ACCOUNTS.mom.color:ACCOUNTS.dad.color;
 
-  function ScrollTopBtn() {
-    if (!showScrollTop) return null;
-    return (
-      <div style={{ position:"sticky", bottom:16, display:"flex", justifyContent:"flex-end", pointerEvents:"none", marginTop:8 }}>
-        <button onClick={()=>{ if(scrollRef.current) scrollRef.current.scrollTo({ top:0, behavior:"smooth" }); }}
-          style={{ pointerEvents:"auto", width:44, height:44, borderRadius:"50%", background:"linear-gradient(135deg,#C8986A,#A87848)", border:"none", color:"white", fontSize:22, cursor:"pointer", boxShadow:"0 4px 16px rgba(140,80,40,0.35)", display:"flex", alignItems:"center", justifyContent:"center", fontFamily:"inherit" }}>↑</button>
-      </div>
-    );
-  }
-
   return (
     <Page title="全部支出" onBack={onBack} scrollRef={scrollRef}>
       <DateRangeBar hook={dateHook} accentColor={activeColor}/>
@@ -2132,7 +2123,6 @@ function AllExpensesPage({ expenses, onBack, onDelete, categoryIcons, categoryCo
               </div>
             </div>
           ))}
-          <ScrollTopBtn/>
         </div>
       )}
 
@@ -2174,8 +2164,13 @@ function AllExpensesPage({ expenses, onBack, onDelete, categoryIcons, categoryCo
             );
           })}
         </div>
-        <ScrollTopBtn/>
       </>)}
+      {showScrollTop && (
+        <div style={{ position:"sticky", bottom:16, display:"flex", justifyContent:"flex-end", pointerEvents:"none" }}>
+          <button onClick={()=>{ if(scrollRef.current) scrollRef.current.scrollTo({ top:0, behavior:"smooth" }); }}
+            style={{ pointerEvents:"auto", width:46, height:46, borderRadius:"50%", background:"linear-gradient(135deg,#C8986A,#A87848)", border:"none", color:"white", fontSize:24, cursor:"pointer", boxShadow:"0 4px 16px rgba(140,80,40,0.4)", display:"flex", alignItems:"center", justifyContent:"center" }}>↑</button>
+        </div>
+      )}
     </Page>
   );
 }
