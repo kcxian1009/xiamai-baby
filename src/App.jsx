@@ -61,15 +61,16 @@ const CATEGORY_COLORS = {
 };
 
 // ── Page Shell ──────────────────────────────────────────────
-function Page({ title, onBack, children, bottomSlot, scrollRef }) {
+function Page({ title, onBack, children, bottomSlot, scrollRef, fabSlot }) {
   return (
     <div style={{ position:"fixed", inset:0, zIndex:50, background:C.bg, fontFamily:"'Noto Sans TC','PingFang TC',sans-serif", display:"flex", flexDirection:"column", maxWidth:430, left:"50%", transform:"translateX(-50%)", width:"100%" }}>
       <div style={{ background:C.card, padding:"14px 20px 12px", display:"flex", alignItems:"center", gap:12, borderBottom:"1px solid #CFBBA288", flexShrink:0 }}>
         <button onClick={onBack} style={{ background:C.warm4, border:"none", borderRadius:10, width:34, height:34, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", fontSize:20, color:C.warm1 }}>&#8249;</button>
         <span style={{ fontWeight:800, fontSize:18, color:C.text }}>{title}</span>
       </div>
-      <div ref={scrollRef} style={{ flex:1, overflowY:"auto", padding:"16px 16px 24px" }}>{children}</div>
+      <div style={{ flex:1, overflowY:"auto", padding:"16px 16px 24px", position:"relative" }} ref={scrollRef}>{children}</div>
       {bottomSlot && <div style={{ flexShrink:0 }}>{bottomSlot}</div>}
+      {fabSlot}
     </div>
   );
 }
@@ -2050,8 +2051,13 @@ function AllExpensesPage({ expenses, onBack, onDelete, categoryIcons, categoryCo
     : "rgba(122,174,196,0.3)";
   const activeColor = acctFilter==="全部"?"#D4A840":acctFilter==="baby"?ACCOUNTS.baby.color:acctFilter==="mom"?ACCOUNTS.mom.color:ACCOUNTS.dad.color;
 
+  const fabBtn = showScrollTop ? (
+    <button onClick={()=>{ if(scrollRef.current) scrollRef.current.scrollTo({ top:0, behavior:"smooth" }); }}
+      style={{ position:"absolute", bottom:24, right:16, zIndex:200, width:44, height:44, borderRadius:"50%", background:"linear-gradient(135deg,#C8986A,#A87848)", border:"none", color:"white", fontSize:22, cursor:"pointer", boxShadow:"0 4px 16px rgba(140,80,40,0.35)", display:"flex", alignItems:"center", justifyContent:"center", fontFamily:"inherit" }}>↑</button>
+  ) : null;
+
   return (
-    <Page title="全部支出" onBack={onBack} scrollRef={scrollRef}>
+    <Page title="全部支出" onBack={onBack} scrollRef={scrollRef} fabSlot={fabBtn}>
       <DateRangeBar hook={dateHook} accentColor={activeColor}/>
 
       <div style={{ background:acctGrad, borderRadius:20, padding:"18px 20px", color:"white", marginBottom:16, boxShadow:"0 6px 24px "+acctShadow, transition:"all 0.3s" }}>
@@ -2159,10 +2165,6 @@ function AllExpensesPage({ expenses, onBack, onDelete, categoryIcons, categoryCo
           })}
         </div>
       </>)}
-      {showScrollTop && (
-        <button onClick={()=>{ if(scrollRef.current) scrollRef.current.scrollTo({ top:0, behavior:"smooth" }); }}
-          style={{ position:"fixed", bottom:28, right:"calc(50% - 197px)", zIndex:200, width:44, height:44, borderRadius:"50%", background:"linear-gradient(135deg,#C8986A,#A87848)", border:"none", color:"white", fontSize:22, cursor:"pointer", boxShadow:"0 4px 16px rgba(140,80,40,0.35)", display:"flex", alignItems:"center", justifyContent:"center", fontFamily:"inherit" }}>↑</button>
-      )}
     </Page>
   );
 }
