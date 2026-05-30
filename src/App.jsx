@@ -1943,7 +1943,7 @@ function AllExpensesPage({ expenses, onBack, onDelete, categoryIcons, categoryCo
     const el = scrollRef.current;
     if (!el) return;
     const onScroll = () => setShowScrollTop(el.scrollTop > 200);
-    el.addEventListener("scroll", onScroll, { passive: true });
+    el.addEventListener("scroll", onScroll);
     return () => el.removeEventListener("scroll", onScroll);
   }, []);
 
@@ -2057,9 +2057,13 @@ function AllExpensesPage({ expenses, onBack, onDelete, categoryIcons, categoryCo
     : "rgba(122,174,196,0.3)";
   const activeColor = acctFilter==="全部"?"#D4A840":acctFilter==="baby"?ACCOUNTS.baby.color:acctFilter==="mom"?ACCOUNTS.mom.color:ACCOUNTS.dad.color;
 
+  // Scroll-to-top button overlay
   const scrollTopOverlay = (
     <button onClick={()=>{ if(scrollRef.current) scrollRef.current.scrollTo({ top:0, behavior:"smooth" }); }}
-      style={{ position:"absolute", bottom:24, right:16, zIndex:100, width:46, height:46, borderRadius:"50%", background:"linear-gradient(135deg,#C8986A,#A87848)", border:"none", color:"white", fontSize:24, cursor:"pointer", boxShadow:"0 4px 16px rgba(140,80,40,0.4)", display:"flex", alignItems:"center", justifyContent:"center" }}>↑</button>
+      style={{ position:"absolute", bottom:24, right:16, zIndex:100, width:46, height:46,
+      borderRadius:"50%", background:"linear-gradient(135deg,#C8986A,#A87848)", border:"none", cursor:"pointer",
+      display:showScrollTop?"flex":"none", alignItems:"center", justifyContent:"center", fontSize:22, color:"white",
+      boxShadow:"0 4px 12px rgba(0,0,0,0.2)", transition:"all 0.2s", fontWeight:700 }}>↑</button>
   );
 
   return (
@@ -2171,6 +2175,12 @@ function AllExpensesPage({ expenses, onBack, onDelete, categoryIcons, categoryCo
           })}
         </div>
       </>)}
+      {showScrollTop && (
+        <div style={{ position:"sticky", bottom:16, display:"flex", justifyContent:"flex-end", pointerEvents:"none" }}>
+          <button onClick={()=>{ if(scrollRef.current) scrollRef.current.scrollTo({ top:0, behavior:"smooth" }); }}
+            style={{ pointerEvents:"auto", width:46, height:46, borderRadius:"50%", background:"linear-gradient(135deg,#C8986A,#A87848)", border:"none", color:"white", fontSize:24, cursor:"pointer", boxShadow:"0 4px 16px rgba(140,80,40,0.4)", display:"flex", alignItems:"center", justifyContent:"center" }}>↑</button>
+        </div>
+      )}
     </Page>
   );
 }
